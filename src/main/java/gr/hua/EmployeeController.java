@@ -3,7 +3,9 @@ package gr.hua;
 import gr.hua.models.Employee;
 import gr.hua.models.EmployeeDao;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,6 +13,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.naming.Context;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
+import javax.naming.ldap.InitialLdapContext;
+import javax.naming.ldap.LdapContext;
+import java.util.Hashtable;
 import java.util.List;
 
 
@@ -20,6 +31,25 @@ public class EmployeeController {
     /**
      * GET /create  --> Create a new user and save it in the database.
      */
+
+
+    @RequestMapping(value = "/", method = RequestMethod.GET)
+    @ResponseBody
+    public String currentUserName(Authentication authentication) {
+       // return authentication.getDetails().toString();
+
+        String principal = authentication.getPrincipal().toString();
+
+        RetrieveUserAttributes retrieveUserAttributes = new RetrieveUserAttributes();
+        retrieveUserAttributes.getUserBasicAttributes(authentication.getName(), retrieveUserAttributes.getLdapContext());
+
+        return principal + "///" +  authentication.getAuthorities().toString();
+
+
+    }
+
+
+
 
     @RequestMapping(value = "/employees", method = RequestMethod.GET, produces = "application/json")    @ResponseBody
     public List<Employee> all(@AuthenticationPrincipal final UserDetails user) {
